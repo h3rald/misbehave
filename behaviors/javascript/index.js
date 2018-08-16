@@ -4,7 +4,7 @@ import {
   onNewLine,
   allNewLines,
   allCharacters
-} from '../utils.js'
+} from '../utils/index.js'
 
 
 export const autoIndent = (newLine, tab, prefix, selected, suffix) => {
@@ -104,7 +104,7 @@ export const tabUnindent = (newLine, tab, prefix, selected, suffix) => {
   return { prefix, selected, suffix }
 }
 
-export function StrUtil(newLine, tab) {
+export function JsBehavior(newLine, tab) {
   return {
     autoIndent    : (...args) => autoIndent(newLine, tab, ...args),
     autoOpen      : autoOpen,

@@ -12,7 +12,12 @@ module.exports = {
   },
   plugins    : [
     nodeResolve({ jsnext: true, main: true, browser: true }),
-    commonjs(),
+    commonjs({
+      namedExports: {
+        'node_modules/undo-manager/lib/undomanager.js': ['UndoManager'],
+        'node_modules/combokeys/Combokeys/index.js': ['Combokeys']
+      }
+    }),
     buble(),
     filesize()
   ]

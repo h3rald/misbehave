@@ -1,7 +1,7 @@
 import { Combokeys } from 'combokeys'
 import { UndoManager } from 'undo-manager'
 import { getSections, setSelection } from './utils/selection.js'
-import { defineNewLine } from './behaviors/utils.js'
+import { defineNewLine } from './behaviors/utils/index.js'
 
 
 export class Editable {

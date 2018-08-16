@@ -1,14 +1,22 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define('Misbehave', factory) :
-	(global.Misbehave = factory());
-}(this, (function () { 'use strict';
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
 /* eslint-env node, browser */
+/**
+ * binds an event to Combokeys
+ *
+ * can be a single key, a combination of keys separated with +,
+ * an array of keys, or a sequence of keys separated by spaces
+ *
+ * be sure to list the modifier keys first to make sure that the
+ * correct key ends up getting bound (the last key in the pattern)
+ *
+ * @param {string|Array} keys
+ * @param {Function} callback
+ * @param {string=} action - "keypress", "keydown", or "keyup"
+ * @returns void
+ */
 var bind = function (keys, callback, action) {
   var self = this;
 
@@ -18,6 +26,15 @@ var bind = function (keys, callback, action) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * binds multiple combinations to the same callback
+ *
+ * @param {Array} combinations
+ * @param {Function} callback
+ * @param {string|undefined} action
+ * @returns void
+ */
 var bindMultiple = function (combinations, callback, action) {
   var self = this;
 
@@ -27,6 +44,23 @@ var bindMultiple = function (combinations, callback, action) {
 };
 
 /* eslint-env node, browser */
+/**
+ * unbinds an event to Combokeys
+ *
+ * the unbinding sets the callback function of the specified key combo
+ * to an empty function and deletes the corresponding key in the
+ * directMap dict.
+ *
+ * TODO: actually remove this from the callbacks dictionary instead
+ * of binding an empty function
+ *
+ * the keycombo+action has to be exactly the same as
+ * it was defined in the bind method
+ *
+ * @param {string|Array} keys
+ * @param {string} action
+ * @returns void
+ */
 var unbind = function (keys, action) {
   var self = this;
 
@@ -34,6 +68,13 @@ var unbind = function (keys, action) {
 };
 
 /* eslint-env node, browser */
+/**
+ * triggers an event that has already been bound
+ *
+ * @param {string} keys
+ * @param {string=} action
+ * @returns void
+ */
 var trigger = function (keys, action) {
   var self = this;
   if (self.directMap[keys + ':' + action]) {
@@ -43,6 +84,14 @@ var trigger = function (keys, action) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * resets the library back to its initial state. This is useful
+ * if you want to clear out the current keyboard shortcuts and bind
+ * new ones - for example if you switch to another page
+ *
+ * @returns void
+ */
 var reset = function () {
   var self = this;
   self.callbacks = {};
@@ -51,6 +100,14 @@ var reset = function () {
 };
 
 /* eslint-env node, browser */
+
+/**
+* should we stop this event before firing off callbacks
+*
+* @param {Event} e
+* @param {Element} element
+* @return {boolean}
+*/
 var stopCallback = function (e, element) {
   // if the element has the class "combokeys" then no need to stop
   if ((' ' + element.className + ' ').indexOf(' combokeys ') > -1) {
@@ -64,10 +121,25 @@ var stopCallback = function (e, element) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * determines if the keycode specified is a modifier key or not
+ *
+ * @param {string} key
+ * @returns {boolean}
+ */
 var isModifier = function (key) {
   return key === 'shift' || key === 'ctrl' || key === 'alt' || key === 'meta'
 };
 
+/**
+ * handles a character key event
+ *
+ * @param {string} character
+ * @param {Array} modifiers
+ * @param {Event} e
+ * @returns void
+ */
 var handleKey = function (character, modifiers, e) {
   var self = this;
   var callbacks;
@@ -166,13 +238,10 @@ function off (element, event, callback, capture) {
   ;(element.removeEventListener || element.detachEvent).call(element, event, callback, capture);
   return callback
 }
-
 domEvent.on = on_1;
 domEvent.off = off_1;
 
 var specialKeysMap = createCommonjsModule(function (module) {
-/* eslint-env node, browser */
-'use strict';
 /**
  * mapping of special keycodes to their corresponding keys
  *
@@ -204,6 +273,7 @@ module.exports = {
   46: 'del',
   91: 'meta',
   93: 'meta',
+  173: 'minus',
   187: 'plus',
   189: 'minus',
   224: 'meta'
@@ -226,10 +296,18 @@ for (i = 0; i <= 9; ++i) {
 });
 
 /* eslint-env node, browser */
+/**
+ * mapping for special characters so they can support
+ *
+ * this dictionary is only used incase you want to bind a
+ * keyup or keydown event to one of these keys
+ *
+ * @type {Object}
+ */
 var specialCharactersMap = {
   106: '*',
-  107: '+',
-  109: '-',
+  107: 'plus',
+  109: 'minus',
   110: '.',
   111: '/',
   186: ';',
@@ -245,6 +323,12 @@ var specialCharactersMap = {
   222: "'"
 };
 
+/**
+ * takes the event and returns the key character
+ *
+ * @param {Event} e
+ * @return {string}
+ */
 var characterFromEvent = function (e) {
   var SPECIAL_KEYS_MAP,
     SPECIAL_CHARACTERS_MAP;
@@ -272,11 +356,11 @@ var characterFromEvent = function (e) {
   }
 
   // for non keypress events the special maps are needed
-  if (SPECIAL_KEYS_MAP[e.which]) {
+  if (SPECIAL_KEYS_MAP[e.which] !== undefined) {
     return SPECIAL_KEYS_MAP[e.which]
   }
 
-  if (SPECIAL_CHARACTERS_MAP[e.which]) {
+  if (SPECIAL_CHARACTERS_MAP[e.which] !== undefined) {
     return SPECIAL_CHARACTERS_MAP[e.which]
   }
 
@@ -289,6 +373,13 @@ var characterFromEvent = function (e) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * takes a key event and figures out what the modifiers are
+ *
+ * @param {Event} e
+ * @returns {Array}
+ */
 var eventModifiers = function (e) {
   var modifiers = [];
 
@@ -311,6 +402,12 @@ var eventModifiers = function (e) {
   return modifiers
 };
 
+/**
+ * handles a keydown event
+ *
+ * @param {Event} e
+ * @returns void
+ */
 var handleKeyEvent = function (e) {
   var self = this;
   var characterFromEvent$$1;
@@ -325,7 +422,7 @@ var handleKeyEvent = function (e) {
   var character = characterFromEvent$$1(e);
 
   // no character found then stop
-  if (!character) {
+  if (character === undefined) {
     return
   }
 
@@ -352,6 +449,17 @@ var addEvents = function () {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * binds a single keyboard combination
+ *
+ * @param {string} combination
+ * @param {Function} callback
+ * @param {string=} action
+ * @param {string=} sequenceName - name of sequence if part of sequence
+ * @param {number=} level - what part of the sequence the command is
+ * @returns void
+ */
 var bindSingle = function (combination, callback, action, sequenceName, level) {
   var self = this;
 
@@ -397,6 +505,13 @@ var bindSingle = function (combination, callback, action, sequenceName, level) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * Converts from a string key combination to an array
+ *
+ * @param  {string} combination like "command+shift+l"
+ * @return {Array}
+ */
 var keysFromString = function (combination) {
   if (combination === '+') {
     return ['+']
@@ -406,6 +521,12 @@ var keysFromString = function (combination) {
 };
 
 /* eslint-env node, browser */
+/**
+ * this is a list of special strings you can use to map
+ * to modifier keys when you specify your keyboard shortcuts
+ *
+ * @type {Object}
+ */
 var specialAliases = {
   'option': 'alt',
   'command': 'meta',
@@ -415,6 +536,16 @@ var specialAliases = {
 };
 
 /* eslint-env node, browser */
+/**
+ * this is a mapping of keys that require shift on a US keypad
+ * back to the non shift equivelents
+ *
+ * this is so you can use keyup events with these keys
+ *
+ * note that this will only work reliably on US keyboards
+ *
+ * @type {Object}
+ */
 var shiftMap = {
   '~': '`',
   '!': '1',
@@ -437,6 +568,13 @@ var shiftMap = {
   '|': '\\'
 };
 
+/**
+ * Gets info for a specific key combination
+ *
+ * @param  {string} combination key combination ("command+s" or "a" or "*")
+ * @param  {string=} action
+ * @returns {Object}
+ */
 var getKeyInfo = function (combination, action) {
   var self = this;
   var keysFromString$$1;
@@ -490,6 +628,14 @@ var getKeyInfo = function (combination, action) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * picks the best action based on the key combination
+ *
+ * @param {string} key - character for key
+ * @param {Array} modifiers
+ * @param {string=} action passed in
+ */
 var pickBestAction = function (key, modifiers, action) {
   var self = this;
 
@@ -508,6 +654,12 @@ var pickBestAction = function (key, modifiers, action) {
   return action
 };
 
+/**
+ * reverses the map lookup so that we can look for specific keys
+ * to see what can and can't use keypress
+ *
+ * @return {Object}
+ */
 var getReverseMap = function () {
   var self = this;
   var constructor = self.constructor;
@@ -532,10 +684,30 @@ var getReverseMap = function () {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * checks if two arrays are equal
+ *
+ * @param {Array} modifiers1
+ * @param {Array} modifiers2
+ * @returns {boolean}
+ */
 var modifiersMatch = function (modifiers1, modifiers2) {
   return modifiers1.sort().join(',') === modifiers2.sort().join(',')
 };
 
+/**
+ * finds all callbacks that match based on the keycode, modifiers,
+ * and action
+ *
+ * @param {string} character
+ * @param {Array} modifiers
+ * @param {Event|Object} e
+ * @param {string=} sequenceName - name of the sequence we are looking for
+ * @param {string=} combination
+ * @param {number=} level
+ * @returns {Array}
+ */
 var getMatches = function (character, modifiers, e, sequenceName, combination, level) {
   var self = this;
   var j;
@@ -610,6 +782,13 @@ var getMatches = function (character, modifiers, e, sequenceName, combination, l
 };
 
 /* eslint-env node, browser */
+
+/**
+ * resets all sequence counters except for the ones passed in
+ *
+ * @param {Object} doNotReset
+ * @returns void
+ */
 var resetSequences = function (doNotReset) {
   var self = this;
 
@@ -632,6 +811,13 @@ var resetSequences = function (doNotReset) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * prevents default for this event
+ *
+ * @param {Event} e
+ * @returns void
+ */
 var preventDefault = function (e) {
   if (e.preventDefault) {
     e.preventDefault();
@@ -642,6 +828,13 @@ var preventDefault = function (e) {
 };
 
 /* eslint-env node, browser */
+
+/**
+ * stops propogation for this event
+ *
+ * @param {Event} e
+ * @returns void
+ */
 var stopPropagation = function (e) {
   if (e.stopPropagation) {
     e.stopPropagation();
@@ -651,6 +844,16 @@ var stopPropagation = function (e) {
   e.cancelBubble = true;
 };
 
+/**
+ * actually calls the callback function
+ *
+ * if your callback function returns false this will use the jquery
+ * convention - prevent default and stop propogation on the event
+ *
+ * @param {Function} callback
+ * @param {Event} e
+ * @returns void
+ */
 var fireCallback = function (callback, e, combo, sequence) {
   var self = this;
   var preventDefault$$1;
@@ -669,6 +872,15 @@ var fireCallback = function (callback, e, combo, sequence) {
   }
 };
 
+/**
+ * binds a key sequence to an event
+ *
+ * @param {string} combo - combo specified in bind call
+ * @param {Array} keys
+ * @param {Function} callback
+ * @param {string=} action
+ * @returns void
+ */
 var bindSequence = function (combo, keys, callback, action) {
   var self = this;
 
@@ -737,6 +949,14 @@ var bindSequence = function (combo, keys, callback, action) {
 };
 
 /* eslint-env node, browser */
+/**
+ * called to set a 1 second timeout on the specified sequence
+ *
+ * this is so after each key press in the sequence you have 1 second
+ * to press the next key before you have to start over
+ *
+ * @returns void
+ */
 var resetSequenceTimer = function () {
   var self = this;
 
@@ -760,7 +980,8 @@ var detach = function () {
 };
 
 /* eslint-env node, browser */
-var reset$2 = function () {
+
+var reset$1 = function () {
   var self = this;
 
   self.instances.forEach(function (combokeys) {
@@ -768,9 +989,7 @@ var reset$2 = function () {
   });
 };
 
-var index = createCommonjsModule(function (module) {
-/* eslint-env node, browser */
-'use strict';
+var Combokeys = createCommonjsModule(function (module) {
 
 module.exports = function (element) {
   var self = this;
@@ -803,7 +1022,7 @@ module.exports = function (element) {
    *
    * @type {null|number}
    */
-  self.resetTimer;
+  self.resetTimer = null;
 
   /**
    * temporary state where we will ignore the next keyup
@@ -855,7 +1074,7 @@ module.exports.prototype.resetSequenceTimer = resetSequenceTimer;
 module.exports.prototype.detach = detach;
 
 module.exports.instances = [];
-module.exports.reset = reset$2;
+module.exports.reset = reset$1;
 
 /**
  * variable to store the flipped version of MAP from above
@@ -866,16 +1085,13 @@ module.exports.reset = reset$2;
  */
 module.exports.REVERSE_MAP = null;
 });
+var Combokeys_1 = Combokeys.Combokeys;
+var Combokeys_2 = Combokeys.instances;
+var Combokeys_3 = Combokeys.reset;
+var Combokeys_4 = Combokeys.REVERSE_MAP;
 
 var undomanager = createCommonjsModule(function (module) {
-/*
-Simple Javascript undo and redo.
-https://github.com/ArthurClemens/Javascript-Undo-Manager
-*/
-
 (function() {
-
-	'use strict';
 
     function removeFromTo(array, from, to) {
         array.splice(from,
@@ -1010,12 +1226,7 @@ https://github.com/ArthurClemens/Javascript-Undo-Manager
         };
     };
 
-	if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
-		// AMD. Register as an anonymous module.
-		undefined(function() {
-			return UndoManager;
-		});
-	} else if ('object' !== 'undefined' && module.exports) {
+	if (module.exports) {
 		module.exports = UndoManager;
 	} else {
 		window.UndoManager = UndoManager;
@@ -1023,6 +1234,7 @@ https://github.com/ArthurClemens/Javascript-Undo-Manager
 
 }());
 });
+var undomanager_1 = undomanager.UndoManager;
 
 var getSections = function (elem, callback) {
   var sel, range, tempRange, prefix = '', selected = '', suffix = '';
@@ -1152,7 +1364,7 @@ var Editable = function Editable(elem, ref) {
   var editable = this;
   var handler = behavior(defineNewLine(), softTabs ? ' '.repeat(softTabs) : '\t');
 
-  var undoMgr = new undomanager();
+  var undoMgr = new undomanager_1();
   undoMgr.setLimit(undoLimit);
 
   var setDom = function (value) {
@@ -1172,7 +1384,7 @@ var Editable = function Editable(elem, ref) {
     setDom(content);
   };
 
-  var keys = new index(elem);
+  var keys = new Combokeys_1(elem);
   keys.stopCallback = function () { return false; }; // work without needing to set combokeys class on elements
 
   keys.bind('mod+z', function () { undoMgr.undo(); return false });
@@ -1407,7 +1619,7 @@ var tabUnindent = function (newLine, tab, prefix, selected, suffix) {
   return { prefix: prefix, selected: selected, suffix: suffix }
 };
 
-function StrUtil(newLine, tab) {
+function JsBehavior(newLine, tab) {
   return {
     autoIndent    : function () {
       var args = [], len = arguments.length;
@@ -1440,7 +1652,7 @@ var Misbehave = (function (Editable$$1) {
     if ( opts === void 0 ) opts = {};
 
     if (typeof opts.store === 'undefined') { opts.store = store(getSections(elem)); }
-    if (typeof opts.behavior === 'undefined') { opts.behavior = StrUtil; }
+    if (typeof opts.behavior === 'undefined') { opts.behavior = JsBehavior; }
 
     Editable$$1.call(this, elem, opts);
   }
@@ -1452,6 +1664,4 @@ var Misbehave = (function (Editable$$1) {
   return Misbehave;
 }(Editable));
 
-return Misbehave;
-
-})));
+export { Misbehave };
