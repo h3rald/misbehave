@@ -1,12 +1,10 @@
-'use strict';
-
-import Combokeys from 'combokeys'
-import UndoManager from 'undo-manager'
-import { getSections, setSelection } from './utils/selection'
-import { defineNewLine } from './behaviors/utils'
+import { Combokeys } from 'combokeys'
+import { UndoManager } from 'undo-manager'
+import { getSections, setSelection } from './utils/selection.js'
+import { defineNewLine } from './behaviors/utils.js'
 
 
-export default class Editable {
+export class Editable {
   constructor(elem, { autoIndent = true,
                       autoOpen = true,
                       autoStrip = true,

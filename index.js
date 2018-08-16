@@ -1,12 +1,10 @@
-'use strict';
-
-import Editable from './editable'
-import store from './utils/store'
-import { getSections } from './utils/selection'
-import js from './behaviors/javascript'
+import { Editable } from './editable.js'
+import { store } from './utils/store.js'
+import { getSections } from './utils/selection.js'
+import { js } from './behaviors/javascript.js'
 
 
-export default class Misbehave extends Editable {
+export class Misbehave extends Editable {
   constructor(elem, opts = {}) {
     if (typeof opts.store === 'undefined') opts.store = store(getSections(elem))
     if (typeof opts.behavior === 'undefined') opts.behavior = js

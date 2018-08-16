@@ -1,5 +1,3 @@
-'use strict';
-
 export const allNewLines = /\r\n|\r|\n/g
 
 export const onNewLine = /\r\n|\r|\n/

@@ -1,6 +1,4 @@
-'use strict';
-
-export default function store(value) {
+export function store(value) {
   function gettersetter() {
     if (arguments.length) {
       value = arguments[0]

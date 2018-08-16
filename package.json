@@ -4,6 +4,7 @@
   "description": "Add IDE-like text entry to HTML contenteditable tags",
   "main": "misbehave.js",
   "scripts": {
+    "build": "rollup --config",
     "start": "rollup --config --watch",
     "test": "mocha --require reify behaviors/*/tests.js"
   },

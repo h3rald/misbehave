@@ -1,12 +1,10 @@
-'use strict';
-
 import {
   leadingWhitespace,
   removeIfStartsWith,
   onNewLine,
   allNewLines,
   allCharacters
-} from '../utils'
+} from '../utils.js'
 
 
 export const autoIndent = (newLine, tab, prefix, selected, suffix) => {
@@ -106,7 +104,7 @@ export const tabUnindent = (newLine, tab, prefix, selected, suffix) => {
   return { prefix, selected, suffix }
 }
 
-export default function StrUtil(newLine, tab) {
+export function StrUtil(newLine, tab) {
   return {
     autoIndent    : (...args) => autoIndent(newLine, tab, ...args),
     autoOpen      : autoOpen,
