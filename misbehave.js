@@ -1090,151 +1090,132 @@ var Combokeys_2 = Combokeys.instances;
 var Combokeys_3 = Combokeys.reset;
 var Combokeys_4 = Combokeys.REVERSE_MAP;
 
-var undomanager = createCommonjsModule(function (module) {
-(function() {
+/*
+* Simple Javascript undo and redo.
+* https://github.com/ArthurClemens/Javascript-Undo-Manager
+* Ported to ES6 by Fabio Cevasco
+*/
 
-    function removeFromTo(array, from, to) {
-        array.splice(from,
-            !to ||
-            1 + to - from + (!(to < 0 ^ from >= 0) && (to < 0 || -1) * array.length));
-        return array.length;
-    }
+function removeFromTo(array, from, to) {
+  array.splice(from,
+    !to ||
+    1 + to - from + (!(to < 0 ^ from >= 0) && (to < 0 || -1) * array.length));
+    return array.length;
+}
 
-    var UndoManager = function() {
+var UndoManager = function UndoManager() {
+  this.commands = [];
+  this.index = -1;
+  this.limit = 0;
+  this.isExecuting = false;
+  this.callback = null;
+};
 
-        var commands = [],
-            index = -1,
-            limit = 0,
-            isExecuting = false,
-            callback,
-            
-            // functions
-            execute;
 
-        execute = function(command, action) {
-            if (!command || typeof command[action] !== "function") {
-                return this;
-            }
-            isExecuting = true;
+// functions
+//execute;
 
-            command[action]();
+UndoManager.prototype.execute = function execute (command, action) {
+  if (!command || typeof command[action] !== "function") {
+    return this;
+  }
+  this.isExecuting = true;
 
-            isExecuting = false;
-            return this;
-        };
+  command[action]();
 
-        return {
+  this.isExecuting = false;
+  return this;
+};
 
-            /*
-            Add a command to the queue.
-            */
-            add: function (command) {
-                if (isExecuting) {
-                    return this;
-                }
-                // if we are here after having called undo,
-                // invalidate items higher on the stack
-                commands.splice(index + 1, commands.length - index);
+/*
+Add a command to the queue.
+*/
+UndoManager.prototype.add = function add (command) {
+  if (this.isExecuting) {
+    return this;
+  }
+  // if we are here after having called undo,
+  // invalidate items higher on the stack
+  this.commands.splice(this.index + 1, this.commands.length - this.index);
 
-                commands.push(command);
-                
-                // if limit is set, remove items from the start
-                if (limit && commands.length > limit) {
-                    removeFromTo(commands, 0, -(limit+1));
-                }
-                
-                // set the current index to the end
-                index = commands.length - 1;
-                if (callback) {
-                    callback();
-                }
-                return this;
-            },
+  this.commands.push(command);
 
-            /*
-            Pass a function to be called on undo and redo actions.
-            */
-            setCallback: function (callbackFunc) {
-                callback = callbackFunc;
-            },
+  // if limit is set, remove items from the start
+  if (this.limit && this.commands.length > this.limit) {
+    removeFromTo(this.commands, 0, -(this.limit+1));
+  }
 
-            /*
-            Perform undo: call the undo function at the current index and decrease the index by 1.
-            */
-            undo: function () {
-                var command = commands[index];
-                if (!command) {
-                    return this;
-                }
-                execute(command, "undo");
-                index -= 1;
-                if (callback) {
-                    callback();
-                }
-                return this;
-            },
+  // set the current index to the end
+  this.index = this.commands.length - 1;
+  if (this.callback) {
+    this.callback();
+  }
+  return this;
+};
+/*
+Pass a function to be called on undo and redo actions.
+*/
+UndoManager.prototype.setCallback = function setCallback (callbackFunc) {
+  this.callback = callbackFunc;
+};
+/*
+Perform undo: call the undo function at the current index and decrease the index by 1.
+*/
+UndoManager.prototype.undo = function undo () {
+  var command = this.commands[this.index];
+  if (!command) {
+    return this;
+  }
+  this.execute(command, "undo");
+  this.index -= 1;
+  if (this.callback) {
+    this.callback();
+  }
+  return this;
+};
+/*
+Perform redo: call the redo function at the next index and increase the index by 1.
+*/
+UndoManager.prototype.redo = function redo () {
+  var command = this.commands[this.index + 1];
+  if (!command) {
+    return this;
+  }
+  this.execute(command, "redo");
+  this.index += 1;
+  if (this.callback) {
+    this.callback();
+  }
+  return this;
+};
+/*
+Clears the memory, losing all stored states. Reset the index.
+*/
+UndoManager.prototype.clear = function clear () {
+  var prev_size = this.commands.length;
 
-            /*
-            Perform redo: call the redo function at the next index and increase the index by 1.
-            */
-            redo: function () {
-                var command = commands[index + 1];
-                if (!command) {
-                    return this;
-                }
-                execute(command, "redo");
-                index += 1;
-                if (callback) {
-                    callback();
-                }
-                return this;
-            },
+  this.commands = [];
+  this.index = -1;
 
-            /*
-            Clears the memory, losing all stored states. Reset the index.
-            */
-            clear: function () {
-                var prev_size = commands.length;
-
-                commands = [];
-                index = -1;
-
-                if (callback && (prev_size > 0)) {
-                    callback();
-                }
-            },
-
-            hasUndo: function () {
-                return index !== -1;
-            },
-
-            hasRedo: function () {
-                return index < (commands.length - 1);
-            },
-
-            getCommands: function () {
-                return commands;
-            },
-
-            getIndex: function() {
-                return index;
-            },
-            
-            setLimit: function (l) {
-                limit = l;
-            }
-        };
-    };
-
-	if (module.exports) {
-		module.exports = UndoManager;
-	} else {
-		window.UndoManager = UndoManager;
-	}
-
-}());
-});
-var undomanager_1 = undomanager.UndoManager;
+  if (this.callback && (prev_size > 0)) {
+    this.callback();
+  }
+};
+UndoManager.prototype.hasUndo = function hasUndo () {
+  return this.index !== -1;
+};
+UndoManager.prototype.hasRedo = function hasRedo () {
+  return this.index < (this.commands.length - 1);
+};
+UndoManager.prototype.getCommands = function getCommands () {
+  return this.commands;
+};
+UndoManager.prototype.getIndex = function getIndex () {
+  return this.index;
+};
+UndoManager.prototype.setLimit = function setLimit (l) {
+  this.limit = l;
+};
 
 var getSections = function (elem, callback) {
   var sel, range, tempRange, prefix = '', selected = '', suffix = '';
@@ -1364,7 +1345,7 @@ var Editable = function Editable(elem, ref) {
   var editable = this;
   var handler = behavior(defineNewLine(), softTabs ? ' '.repeat(softTabs) : '\t');
 
-  var undoMgr = new undomanager_1();
+  var undoMgr = new UndoManager();
   undoMgr.setLimit(undoLimit);
 
   var setDom = function (value) {

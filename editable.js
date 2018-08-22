@@ -1,5 +1,5 @@
 import { Combokeys } from 'combokeys'
-import { UndoManager } from 'undo-manager'
+import { UndoManager } from './vendor/undomanager.js'
 import { getSections, setSelection } from './utils/selection.js'
 import { defineNewLine } from './behaviors/utils/index.js'
 

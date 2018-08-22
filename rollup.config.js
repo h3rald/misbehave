@@ -14,7 +14,6 @@ module.exports = {
     nodeResolve({ jsnext: true, main: true, browser: true }),
     commonjs({
       namedExports: {
-        'node_modules/undo-manager/lib/undomanager.js': ['UndoManager'],
         'node_modules/combokeys/Combokeys/index.js': ['Combokeys']
       }
     }),

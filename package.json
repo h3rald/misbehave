@@ -31,8 +31,7 @@
     "rollup-watch": "latest"
   },
   "dependencies": {
-    "combokeys": "latest",
-    "undo-manager": "latest"
+    "combokeys": "latest"
   },
   "repository": {
     "type": "git",
