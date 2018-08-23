@@ -1,7 +1,7 @@
-import { Combokeys } from 'combokeys'
-import { UndoManager } from './vendor/undomanager.js'
-import { getSections, setSelection } from './utils/selection.js'
-import { defineNewLine } from './behaviors/utils/index.js'
+import { Mousetrap } from './vendor/mousetrap.js';
+import { UndoManager } from './vendor/undomanager.js';
+import { getSections, setSelection } from './utils/selection.js';
+import { defineNewLine } from './behaviors/utils/index.js';
 
 
 export class Editable {
@@ -41,7 +41,7 @@ export class Editable {
       setDom(content)
     }
 
-    const keys = new Combokeys(elem)
+    const keys = new Mousetrap(elem);
     keys.stopCallback = () => false // work without needing to set combokeys class on elements
 
     keys.bind('mod+z', () => { undoMgr.undo(); return false })
